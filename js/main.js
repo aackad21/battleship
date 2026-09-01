@@ -37,6 +37,7 @@ const placement = {
   selectedShipId: FLEET[0].id,
   orientation: HORIZONTAL,
   anchorIndex: 0,
+  carrying: false,
 };
 
 let busy = false;
@@ -89,7 +90,6 @@ function renderTray() {
     const item = document.createElement('li');
     item.className = 'tray-item';
     item.dataset.shipId = ship.id;
-    item.draggable = true;
     if (placed) item.classList.add('placed');
     if (placement.selectedShipId === ship.id) item.classList.add('selected');
     item.innerHTML = `
@@ -122,10 +122,7 @@ function spriteFor(ship, { draggable = false, sunk = false } = {}) {
     sprite.style.height = '10%';
     sprite.classList.add('vertical');
   }
-  if (draggable) {
-    sprite.classList.add('draggable');
-    sprite.draggable = true;
-  }
+  if (draggable) sprite.classList.add('draggable');
   if (sunk) sprite.classList.add('sunk');
   sprite.innerHTML = `<img src="assets/img/${ship.id}.svg" alt="${ship.name}" />`;
   return sprite;
@@ -441,17 +438,15 @@ function wireTray() {
     renderTray();
   });
 
-  dom.tray.addEventListener('dragstart', (event) => {
+  dom.tray.addEventListener('mousedown', (event) => {
     const item = event.target.closest('.tray-item');
-    if (!item) return;
+    if (!item || event.button !== 0 || game.phase !== PHASE.SETUP) return;
+    event.preventDefault();
     placement.selectedShipId = item.dataset.shipId;
     placement.anchorIndex = 0;
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', item.dataset.shipId);
+    placement.carrying = true;
     renderTray();
   });
-
-  dom.tray.addEventListener('dragend', clearPreview);
 
   dom.tray.addEventListener('contextmenu', (event) => {
     event.preventDefault();
@@ -485,37 +480,29 @@ function wirePlayerBoard() {
     if (cell) showPreview(Number(cell.dataset.row), Number(cell.dataset.col));
   });
 
-  dom.playerGrid.addEventListener('dragover', (event) => {
-    if (game.phase !== PHASE.SETUP) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-    const cell = event.target.closest('.cell');
-    if (!cell) return;
-    showPreview(Number(cell.dataset.row), Number(cell.dataset.col));
-  });
-
-  dom.playerGrid.addEventListener('drop', (event) => {
-    if (game.phase !== PHASE.SETUP) return;
-    event.preventDefault();
-    const cell = event.target.closest('.cell');
-    clearPreview();
-    if (!cell) return;
-    tryPlace(Number(cell.dataset.row), Number(cell.dataset.col));
-  });
-
-  // dragging an already-placed ship to reposition it
-  dom.playerShips.addEventListener('dragstart', (event) => {
+  // grabbing an already-placed ship to reposition it
+  dom.playerShips.addEventListener('mousedown', (event) => {
     const sprite = event.target.closest('.ship-sprite');
-    if (!sprite || game.phase !== PHASE.SETUP) return;
-    const shipId = sprite.dataset.shipId;
-    const ship = game.playerBoard.ships.find((entry) => entry.id === shipId);
+    if (!sprite || event.button !== 0 || game.phase !== PHASE.SETUP) return;
+    const ship = game.playerBoard.ships.find(
+      (entry) => entry.id === sprite.dataset.shipId
+    );
     if (!ship) return;
-    placement.selectedShipId = shipId;
+    event.preventDefault();
+    placement.selectedShipId = ship.id;
     placement.orientation = ship.orientation;
     placement.anchorIndex = grabbedSegment(event, sprite, ship);
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', shipId);
+    placement.carrying = true;
     renderTray();
+  });
+
+  document.addEventListener('mouseup', (event) => {
+    if (!placement.carrying) return;
+    placement.carrying = false;
+    const cell = event.target.closest?.('.cell');
+    clearPreview();
+    if (!cell || !dom.playerGrid.contains(cell)) return;
+    tryPlace(Number(cell.dataset.row), Number(cell.dataset.col));
   });
 }
 
