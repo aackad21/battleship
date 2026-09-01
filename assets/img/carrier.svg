@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 100" width="500" height="100">
+  <defs>
+    <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5b6b7d"/>
+      <stop offset="45%" stop-color="#3b4757"/>
+      <stop offset="100%" stop-color="#232c38"/>
+    </linearGradient>
+    <linearGradient id="deck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8492a3"/>
+      <stop offset="100%" stop-color="#5a6779"/>
+    </linearGradient>
+    <linearGradient id="tower" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#aab6c4"/>
+      <stop offset="100%" stop-color="#6d7a8b"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <path d="M 6 27.0 Q 2 50.0 6 73.0 L 447.3 81.0 Q 496 75.0 496 50.0 Q 496 25.0 447.3 19.0 Z" fill="url(#hull)"/>
+    <rect x="24.0" y="22.0" width="440.0" height="56.0" rx="22" fill="url(#deck)"/>
+    <rect x="40.0" y="47.5" width="370.0" height="5.0" rx="2" fill="#e8eef5" opacity="0.8"/>
+    <rect x="350.0" y="16.0" width="34.0" height="22.0" rx="6" fill="url(#tower)"/>
+    <rect x="358.0" y="8.0" width="10.0" height="12.0" rx="3" fill="#c8d3df"/>
+    <circle cx="422.0" cy="50.0" r="7.0" fill="#7b8899"/>
+  </g>
+</svg>

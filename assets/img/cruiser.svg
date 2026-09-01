@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+  <defs>
+    <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5b6b7d"/>
+      <stop offset="45%" stop-color="#3b4757"/>
+      <stop offset="100%" stop-color="#232c38"/>
+    </linearGradient>
+    <linearGradient id="deck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8492a3"/>
+      <stop offset="100%" stop-color="#5a6779"/>
+    </linearGradient>
+    <linearGradient id="tower" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#aab6c4"/>
+      <stop offset="100%" stop-color="#6d7a8b"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <path d="M 6 27.0 Q 2 50.0 6 73.0 L 247.3 81.0 Q 296 75.0 296 50.0 Q 296 25.0 247.3 19.0 Z" fill="url(#hull)"/>
+    <path d="M 6 35.0 Q 2 50.0 6 65.0 L 260.9 73.0 Q 296 67.0 296 50.0 Q 296 33.0 260.9 27.0 Z" fill="url(#deck)" opacity="0.55"/>
+    <rect x="108.0" y="28.0" width="58.0" height="44.0" rx="10" fill="url(#tower)"/>
+    <rect x="126.0" y="16.0" width="16.0" height="16.0" rx="4" fill="#c8d3df"/>
+    <circle cx="60.0" cy="50.0" r="12.0" fill="#6f7d8e"/>
+    <rect x="228.0" y="38.0" width="26.0" height="24.0" rx="6" fill="#6f7d8e"/>
+  </g>
+</svg>
