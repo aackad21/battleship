@@ -253,6 +253,46 @@ kbd {
   pointer-events: none;
 }
 
+.marker-layer {
+  grid-area: 2 / 2;
+  position: relative;
+  pointer-events: none;
+}
+
+.cell-slot {
+  position: absolute;
+  width: 10%;
+  height: 10%;
+}
+
+.marker {
+  position: absolute;
+  inset: 0;
+}
+
+.marker::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+}
+
+.marker-miss::after {
+  width: 30%;
+  height: 30%;
+  background: var(--miss);
+  opacity: 0.85;
+  box-shadow: 0 0 8px rgba(127, 182, 230, 0.5);
+}
+
+.marker-hit::after {
+  width: 46%;
+  height: 46%;
+  background: radial-gradient(circle at 35% 30%, #ffd28a, var(--hit) 55%, #a33208);
+  box-shadow: 0 0 12px rgba(255, 107, 61, 0.7);
+}
+
 .cell {
   position: relative;
   border: none;
@@ -281,30 +321,6 @@ kbd {
 .cell.preview-invalid {
   background: linear-gradient(160deg, #6d2733, #4d1c25);
   box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.8);
-}
-
-.cell.miss::after,
-.cell.hit::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  border-radius: 50%;
-}
-
-.cell.miss::after {
-  width: 30%;
-  height: 30%;
-  background: var(--miss);
-  opacity: 0.85;
-  box-shadow: 0 0 8px rgba(127, 182, 230, 0.5);
-}
-
-.cell.hit::after {
-  width: 46%;
-  height: 46%;
-  background: radial-gradient(circle at 35% 30%, #ffd28a, var(--hit) 55%, #a33208);
-  box-shadow: 0 0 12px rgba(255, 107, 61, 0.7);
 }
 
 .cell.sunk {

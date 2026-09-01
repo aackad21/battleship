@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Battleship</title>
+    <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg" />
     <link rel="stylesheet" href="css/styles.css" />
   </head>
   <body>
@@ -39,6 +40,7 @@
             <div class="labels-row" aria-hidden="true"></div>
             <div class="grid" id="player-grid" role="grid" aria-label="Your fleet"></div>
             <div class="ship-layer" id="player-ships"></div>
+            <div class="marker-layer" id="player-markers" aria-hidden="true"></div>
           </div>
           <p class="fleet-status" id="player-fleet-status"></p>
         </div>
@@ -50,6 +52,7 @@
             <div class="labels-row" aria-hidden="true"></div>
             <div class="grid" id="enemy-grid" role="grid" aria-label="Enemy waters"></div>
             <div class="ship-layer" id="enemy-ships"></div>
+            <div class="marker-layer" id="enemy-markers" aria-hidden="true"></div>
           </div>
           <p class="fleet-status" id="enemy-fleet-status"></p>
         </div>

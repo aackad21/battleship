@@ -1,9 +1,14 @@
 /**
  * Headless rules + AI checks (no DOM needed): node tests/simulate.mjs
  */
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { Board } from '../js/board.js';
 import { Game, PHASE } from '../js/game.js';
-import { FLEET, HORIZONTAL, VERTICAL, TOTAL_SHIP_CELLS } from '../js/constants.js';
+import { BOARD_SIZE, FLEET, HORIZONTAL, VERTICAL, TOTAL_SHIP_CELLS } from '../js/constants.js';
+
+const repoRoot = fileURLToPath(new URL('..', import.meta.url));
+const readRepoFile = (relative) => readFileSync(repoRoot + relative, 'utf8');
 
 let failures = 0;
 
@@ -42,6 +47,48 @@ function placementRules() {
   check('random fleet occupies exactly 17 distinct cells', occupied.size === TOTAL_SHIP_CELLS);
 }
 
+function boundaryRules() {
+  console.log('boundaries');
+  const carrier = FLEET[0];
+  const last = BOARD_SIZE - 1;
+
+  const corners = new Board();
+  check(
+    'accepts placements flush against every edge',
+    corners.canPlace(0, 0, carrier.size, HORIZONTAL) &&
+      corners.canPlace(0, BOARD_SIZE - carrier.size, carrier.size, HORIZONTAL) &&
+      corners.canPlace(last, 0, carrier.size, HORIZONTAL) &&
+      corners.canPlace(0, last, carrier.size, VERTICAL) &&
+      corners.canPlace(BOARD_SIZE - carrier.size, last, carrier.size, VERTICAL)
+  );
+  check(
+    'rejects overflow past each of the four edges',
+    !corners.canPlace(0, BOARD_SIZE - carrier.size + 1, carrier.size, HORIZONTAL) &&
+      !corners.canPlace(BOARD_SIZE - carrier.size + 1, 0, carrier.size, VERTICAL) &&
+      !corners.canPlace(0, -1, carrier.size, HORIZONTAL) &&
+      !corners.canPlace(-1, 0, carrier.size, VERTICAL)
+  );
+
+  // rotating at an edge where the ship would overflow must leave it untouched
+  const edge = new Board();
+  edge.place(carrier, last, 0, HORIZONTAL);
+  const before = JSON.stringify(edge.ships);
+  check('rejects a rotation that would overflow the board', !edge.place(carrier, last, 0, VERTICAL));
+  check('ship survives a rejected rotation unchanged', JSON.stringify(edge.ships) === before);
+
+  const board = new Board();
+  board.placeRandomly(FLEET);
+  check(
+    'random fleet never leaves the board',
+    board.ships.every((ship) =>
+      ship.cells.every(
+        (cell) =>
+          cell.row >= 0 && cell.row < BOARD_SIZE && cell.col >= 0 && cell.col < BOARD_SIZE
+      )
+    )
+  );
+}
+
 function shotResolution() {
   console.log('shot resolution');
   const board = new Board();
@@ -67,6 +114,7 @@ function fullGames(games = 500) {
   let aiShots = 0;
   let alternated = true;
   let noRepeats = true;
+  let balanced = true;
 
   for (let i = 0; i < games; i += 1) {
     const game = new Game();
@@ -92,6 +140,7 @@ function fullGames(games = 500) {
         if (aiSeen.has(key)) noRepeats = false;
         aiSeen.add(key);
       }
+      if (Math.abs(game.playerStats.shots - game.enemyStats.shots) > 1) balanced = false;
     }
 
     if (guard >= 400) {
@@ -109,14 +158,36 @@ function fullGames(games = 500) {
 
   const avg = aiShots / games;
   check('turns strictly alternate', alternated);
+  check('shot counts never diverge by more than one', balanced);
   check('ai never fires at the same cell twice', noRepeats);
   check(`hunt/target beats random search (avg ${avg.toFixed(1)} shots < 80)`, avg < 80);
   console.log(`  info player (random shots) won ${playerWins}/${games}`);
 }
 
+function renderingLayers() {
+  console.log('rendering layers');
+  const html = readRepoFile('index.html');
+  const css = readRepoFile('css/styles.css');
+  const boardMarkup = html.slice(html.indexOf('<section class="boards">'));
+
+  ['player', 'enemy'].forEach((side) => {
+    const shipAt = boardMarkup.indexOf(`id="${side}-ships"`);
+    const markerAt = boardMarkup.indexOf(`id="${side}-markers"`);
+    check(
+      `${side} markers paint above the ship layer`,
+      shipAt !== -1 && markerAt !== -1 && markerAt > shipAt
+    );
+  });
+
+  check('shot markers are styled on the marker layer, not the cell', css.includes('.marker-hit::after') && !css.includes('.cell.hit::after'));
+  check('page declares a favicon', html.includes('rel="icon"'));
+}
+
 placementRules();
+boundaryRules();
 shotResolution();
 fullGames();
+renderingLayers();
 
 console.log(failures === 0 ? '\nAll checks passed.' : `\n${failures} check(s) failed.`);
 process.exit(failures === 0 ? 0 : 1);

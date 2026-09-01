@@ -20,6 +20,8 @@ const dom = {
   enemyGrid: document.getElementById('enemy-grid'),
   playerShips: document.getElementById('player-ships'),
   enemyShips: document.getElementById('enemy-ships'),
+  playerMarkers: document.getElementById('player-markers'),
+  enemyMarkers: document.getElementById('enemy-markers'),
   playerWrap: document.getElementById('player-board-wrap'),
   enemyWrap: document.getElementById('enemy-board-wrap'),
   playerFleetStatus: document.getElementById('player-fleet-status'),
@@ -150,23 +152,36 @@ function renderEnemyShips() {
 
 /* ---------------- shot rendering ---------------- */
 
-function clearShotClasses(gridEl) {
+function clearShotClasses(gridEl, markerLayerEl) {
   Array.from(gridEl.children).forEach((cell) => {
     cell.classList.remove('shot', 'hit', 'miss', 'sunk', 'preview-valid', 'preview-invalid');
   });
+  markerLayerEl.innerHTML = '';
 }
 
-function playEffect(gridEl, row, col, kind) {
-  const cell = cellAt(gridEl, row, col);
-  const fx = document.createElement('span');
-  fx.className = `fx ${kind === 'hit' ? 'fx-blast' : 'fx-splash'}`;
-  cell.appendChild(fx);
-  fx.addEventListener('animationend', () => fx.remove());
+// markers and effects live above the ship layer so hits on a ship stay visible
+function placeInLayer(layerEl, row, col, className) {
+  const slot = document.createElement('span');
+  slot.className = 'cell-slot';
+  slot.style.left = `${col * 10}%`;
+  slot.style.top = `${row * 10}%`;
+  const node = document.createElement('span');
+  node.className = className;
+  slot.appendChild(node);
+  layerEl.appendChild(slot);
+  return node;
+}
+
+function addMarker(layerEl, row, col, kind) {
+  placeInLayer(layerEl, row, col, `marker marker-${kind}`);
+}
+
+function playEffect(layerEl, row, col, kind) {
+  const fx = placeInLayer(layerEl, row, col, `fx ${kind === 'hit' ? 'fx-blast' : 'fx-splash'}`);
+  fx.addEventListener('animationend', () => fx.parentElement.remove());
   if (kind === 'hit') {
-    const smoke = document.createElement('span');
-    smoke.className = 'fx fx-smoke';
-    cell.appendChild(smoke);
-    smoke.addEventListener('animationend', () => smoke.remove());
+    const smoke = placeInLayer(layerEl, row, col, 'fx fx-smoke');
+    smoke.addEventListener('animationend', () => smoke.parentElement.remove());
   }
 }
 
@@ -327,10 +342,11 @@ function showOverlay() {
   dom.overlay.classList.remove('hidden');
 }
 
-function resolveOutcome(outcome, { gridEl, layerEl, wrapEl, actor }) {
+function resolveOutcome(outcome, { gridEl, layerEl, markerEl, wrapEl, actor }) {
   const cell = cellAt(gridEl, outcome.row, outcome.col);
   cell.classList.add('shot', outcome.result);
-  playEffect(gridEl, outcome.row, outcome.col, outcome.result);
+  addMarker(markerEl, outcome.row, outcome.col, outcome.result);
+  playEffect(markerEl, outcome.row, outcome.col, outcome.result);
   audio.play(outcome.sunk ? 'sunk' : outcome.result);
   if (outcome.result === 'hit') shakeBoard(wrapEl);
 
@@ -371,6 +387,7 @@ function handleEnemyCellClick(event) {
   resolveOutcome(outcome, {
     gridEl: dom.enemyGrid,
     layerEl: dom.enemyShips,
+    markerEl: dom.enemyMarkers,
     wrapEl: dom.enemyWrap,
     actor: 'player',
   });
@@ -388,6 +405,7 @@ function handleEnemyCellClick(event) {
       resolveOutcome(aiOutcome, {
         gridEl: dom.playerGrid,
         layerEl: dom.playerShips,
+        markerEl: dom.playerMarkers,
         wrapEl: dom.playerWrap,
         actor: 'enemy',
       });
@@ -416,8 +434,8 @@ function resetGame() {
   placement.orientation = HORIZONTAL;
   placement.anchorIndex = 0;
   busy = false;
-  clearShotClasses(dom.playerGrid);
-  clearShotClasses(dom.enemyGrid);
+  clearShotClasses(dom.playerGrid, dom.playerMarkers);
+  clearShotClasses(dom.enemyGrid, dom.enemyMarkers);
   dom.enemyShips.innerHTML = '';
   dom.log.innerHTML = '';
   dom.overlay.classList.add('hidden');

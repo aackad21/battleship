@@ -47,8 +47,13 @@ tests/simulate.mjs  headless rules + AI checks
 node tests/simulate.mjs   # or: npm test
 ```
 
-Covers placement rules, shot/sunk resolution, strict turn alternation, and runs
-500 simulated games to confirm the AI never repeats a shot and beats random search.
+Covers placement rules, boundaries, shot/sunk resolution, strict turn alternation,
+rendering-layer invariants, and runs 500 simulated games to confirm the AI never
+repeats a shot and beats random search.
+
+[TESTING.md](TESTING.md) documents the full test matrix, the bugs found and their
+fixes; [docs/acceptance-test-plan.md](docs/acceptance-test-plan.md) is the black-box
+plan those runs follow.
 
 ## Credits
 
